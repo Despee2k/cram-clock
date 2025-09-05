@@ -25,25 +25,41 @@ function keepItem(item) {
 }
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function hasRealLink(it) {
+  const s = (it.link || "").trim();
+  return s && s.toUpperCase() !== "NONE";
+}
+
+function hasRealLink(it) {
+  const s = (it.link || "").trim();
+  return s !== "" && s.toUpperCase() !== "NONE";
+}
+
 function cardHTML(it){
-  const diff=fmtDiff(it.dueDate);
-  let tone="text-emerald-700 dark:text-emerald-300";
-  if(diff.overdue||diff.hoursLeft<=24) tone="text-red-600 dark:text-red-400";
-  else if(diff.hoursLeft<=72) tone="text-amber-600 dark:text-amber-300";
+  const diff = fmtDiff(it.dueDate);
+  let tone = "text-emerald-700 dark:text-emerald-300";
+  if (diff.overdue || diff.hoursLeft <= 24) tone = "text-red-600 dark:text-red-400";
+  else if (diff.hoursLeft <= 72) tone = "text-amber-600 dark:text-amber-300";
+
+  const showLink = hasRealLink(it);
+  const safeLink = esc((it.link || "").trim());
 
   return `
-<article class="rounded-2xl border p-4 shadow-sm bg-white/70 dark:bg-zinc-900/60 backdrop-blur"
-         data-id="${it.id}" data-due="${it.dueDate}">
-  <div>
-    <h3 class="text-lg font-semibold leading-tight">${esc(it.title)}</h3>
-    <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${esc(it.course||"—")}</div>
-  </div>
-  <div class="mt-3 text-2xl md:text-3xl font-bold tabular-nums ${tone}" data-role="countdown">
-    ${diff.overdue?"Overdue ":""}${diff.text}
-  </div>
-  <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Due: ${fmtWhen(it.dueDate)}</div>
-  ${it.link?`<a class="mt-3 inline-block text-sm underline decoration-dotted text-blue-700 dark:text-blue-300" href="${esc(it.link)}" target="_blank" rel="noreferrer">Open in Canvas</a>`:""}
-</article>`;
+    <article class="rounded-2xl border p-4 shadow-sm bg-white/70 dark:bg-zinc-900/60 backdrop-blur"
+            data-id="${it.id}" data-due="${it.dueDate}">
+      <div>
+        <h3 class="text-lg font-semibold leading-tight">${esc(it.title)}</h3>
+        <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${esc(it.course || "—")}</div>
+      </div>
+      <div class="mt-3 text-2xl md:text-3xl font-bold tabular-nums ${tone}" data-role="countdown">
+        ${diff.overdue ? "Overdue " : ""}${diff.text}
+      </div>
+      <div class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Due: ${fmtWhen(it.dueDate)}</div>
+      ${showLink ? `<a class="mt-3 inline-block text-sm underline decoration-dotted text-blue-700 dark:text-blue-300"
+                      href="${safeLink}" target="_blank" rel="noreferrer">Open in Canvas</a>` : ""}
+    </article>
+  `;
 }
 
 function render(items){
